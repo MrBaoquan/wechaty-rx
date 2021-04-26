@@ -1,11 +1,3 @@
-# `mrba-cchper`
+# Wechaty-rx
 
-> TODO: description
-
-## Usage
-
-```
-const mrbaCchper = require('mrba-cchper');
-
-// TODO: DEMONSTRATE API
-```
+> observable wechaty
