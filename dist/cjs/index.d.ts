@@ -1,9 +1,12 @@
 import { Observable } from "rxjs";
-import { Message, WechatyOptions, Contact, Wechaty } from "wechaty";
+import { Message, WechatyOptions, WechatyPlugin, ScanStatus, Contact, Wechaty } from "wechaty";
 declare class WechatBot {
     /** wechaty instance */
     private bot;
     get Bot(): Wechaty;
+    /**
+     * Name of wechaty bot
+     */
     get Name(): string;
     /**
      * Construct a wechat bot
@@ -14,48 +17,82 @@ declare class WechatBot {
      * boot robot
      * @returns
      */
-    Start(): Promise<WechatBot>;
-    // ============== wechaty event to observable Begin ==============
+    OnStart(): Observable<void>;
     /**
      * login to observable
      * @returns login callbacks
      */
     OnLogin(): Observable<Contact>;
+    /**
+     * Scan event to observable
+     */
     OnScan(): Observable<[
         string,
-        number
+        ScanStatus
     ]>;
+    /**
+     * Ready event to observable
+     */
     OnReady(): Observable<void>;
+    /**
+     * Message event to observable
+     */
     OnMessage(): Observable<Message>;
-    //============== wechaty event to observable End ==============
-    /**
-     * quit room if no member or only robot in the room
-     */
-    QuitAllRoomIfEmpty(): Promise<void[]>;
-    /**
-     *
-     *  ------------------------ PRIVATE METHODS ---------------------------------
-     *
-     * */
-    private sys_contacts;
-    // 普通联系人 不是订阅号等其他服务号
-    IsNormalContact(contact: Contact): boolean;
-    private quitRoomIfEmpty;
-    /**
-     * Regeister all bot inner events
-     */
-    private registerInnerEvents;
-    private onScan;
-    // 登录事件
-    private onLogin;
-    // 错误处理
-    private onError;
 }
 declare class BotManager {
     private static bots;
-    static Bootstrap(bots: WechatyOptions[]): Promise<BotManager>;
+    /**
+     * Get bot by name
+     * @param name bot name
+     * @returns WechatBot instance
+     */
+    static Get(name: string): WechatBot;
+    /**
+     * Create bot instance by options
+     * @param bots All bot options
+     */
+    static Build(bots: WechatyOptions[]): typeof BotManager;
+    /**
+     * Bootstrap all bots
+     */
+    static Start(): Promise<unknown>;
+    /**
+     * Register plugins for the given bot
+     * @param botName name of wechaty bot
+     * @param plugins plugin list
+     */
+    static Use(botName: string, ...plugins: (WechatyPlugin | WechatyPlugin[])[]): typeof BotManager;
+    /**
+     * Register plugins for all bots
+     * @param plugin plugin list
+     */
+    static Use(...plugin: (WechatyPlugin | WechatyPlugin[])[]): typeof BotManager;
+    /**
+     * Subscribe any bot message event
+     */
     static OnMessage(): Observable<[
         Message,
+        WechatBot
+    ]>;
+    /**
+     * Subscribe any bot scan event
+     */
+    static OnScan(): Observable<[
+        string,
+        ScanStatus,
+        WechatBot
+    ]>;
+    /**
+     * Subscribe any bot ready event
+     * Completed when all bot ready
+     */
+    static OnReady(): Observable<WechatBot>;
+    /**
+     * Subscribe any bot login event
+     * Completed when all bot logged in
+     */
+    static OnLogin(): Observable<[
+        Contact,
         WechatBot
     ]>;
 }
